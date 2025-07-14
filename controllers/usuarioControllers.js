@@ -1,3 +1,5 @@
+//para aplicar el patron observer
+import emitter from '../helpers/eventEmitter.js';
 import { check, validationResult } from "express-validator";
 import bcrypt from 'bcrypt';
 import Usuario from "../models/Usuario.js";
@@ -60,6 +62,12 @@ const autenticar =async (req, res) => {
     //autenticamos el usuario
     const token = generarJWT(usuario.id)
     
+    //PATRON OBSERVER  registra el inicio de secion del usuario
+    emitter.emit('userLoggedIn', {
+        email: email,
+        nombre: usuario.nombre
+    });
+
     //almacenar token en un acookie
     return res.cookie('_token', token,{
         httpOnly:true

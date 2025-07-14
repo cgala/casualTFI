@@ -1,3 +1,6 @@
+//importo mi emisor de eventos(patron observer)
+import emitter from '../helpers/eventEmitter.js'
+
 import { unlink } from 'node:fs/promises'
 import { validationResult } from "express-validator"
 import { Precio, Categoria, Propiedad} from '../models/index.js'
@@ -87,8 +90,15 @@ const guardar = async (req, res) => {
             usuarioId,
             imagen: ''
         })
-
+        
         const { id } = propiedadGuardada
+        // Loguea la creación del registro guardado usando el PATRON OBSERVER
+        emitter.emit('propertyCreated', {
+            id: id,
+            titulo:titulo
+        })
+
+
         res.redirect(`/propiedades/agregar-imagen/${id}`)
     } catch (error) {
         console.log(error)
@@ -275,6 +285,12 @@ const eliminar = async (req, res) =>{
     //eliminar la imagen
     await unlink(`public/uploads/${propiedad.imagen}`)
     console.log("se elimino la imagen")
+
+    //aplico el PATRON OBSERVER para general log al eliminar una propiedad
+    emitter.emit('propertyDeleted', {
+        id: propiedad.id,
+        titulo: propiedad.titulo
+    })
 
     //eliminar el garage
     await propiedad.destroy()
